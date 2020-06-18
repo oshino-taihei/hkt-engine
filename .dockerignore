@@ -1,0 +1,6 @@
+log
+tmp
+vendor/assets
+node_modules
+yarn-error.log
+.byebug_history
