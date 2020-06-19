@@ -13,7 +13,13 @@
 	"extensions": [
 		"rust-lang.rust",
 		"bungcip.better-toml",
-		"vadimcn.vscode-lldb"
+		"vadimcn.vscode-lldb",
+
+		"donjayamanne.githistory",
+		"eamodio.gitlens",
+		"christian-kohler.path-intellisense",
+		"praveencrony.total-lines",
+		"oderwat.indent-rainbow"
 	],
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
