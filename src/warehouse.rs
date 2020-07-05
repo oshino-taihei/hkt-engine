@@ -23,14 +23,12 @@ pub struct OrderNotReserved {
     pub product_name: String,
     pub stock: i32
 }
-
 // 在庫情報
 #[derive(Debug,PartialEq)]
 pub struct InventoryItem {
     pub product_name: String,
     pub stock: i32
 }
-
 // 倉庫
 #[derive(Debug,PartialEq)]
 pub struct Warehouse<'a> {
@@ -46,7 +44,6 @@ impl Warehouse<'_> {
         };
         let mut requests_to_linked_warehouse = Vec::new();
         requests.iter().for_each(|request| {
-            // let inquiry_result = self.inquiry(&request);
             let mut item_order_result = self.reserve_item(&request);
 
             // 引当できた場合は引当結果(OK)を生成
