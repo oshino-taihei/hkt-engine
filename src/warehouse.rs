@@ -143,7 +143,7 @@ mod tests {
 
         assert_eq!(result.reserved.len(), 1);
         assert_eq!(result.not_reserved.len(), 0);
-        assert_eq!(result.reserved[0], OrderReserved{warehouse: String::from("倉庫1"), product_name: String::from("商品A"), stock: 30 });
+        assert_eq!(result.reserved[0], OrderReserved{ warehouse: String::from("倉庫1"), product_name: String::from("商品A"), stock: 30 });
         
         assert_eq!(w1.inventories[0], InventoryItem { product_name: String::from("商品A"), stock: 100 }) // Warehouseはmutableなので引当後もstockは変化しない
     }
@@ -169,8 +169,8 @@ mod tests {
         assert_eq!(result.reserved.len(), 1);
         assert_eq!(result.not_reserved.len(), 2);
         assert_eq!(result.reserved[0], OrderReserved{warehouse: String::from("倉庫1"), product_name: String::from("商品A"), stock: 100 });
-        assert_eq!(result.not_reserved[0], OrderNotReserved{ product_name: String::from("商品A"), stock: 50});
-        assert_eq!(result.not_reserved[1], OrderNotReserved{ product_name: String::from("商品X"), stock: 999});
+        assert_eq!(result.not_reserved[0], OrderNotReserved{ product_name: String::from("商品A"), stock: 50 });
+        assert_eq!(result.not_reserved[1], OrderNotReserved{ product_name: String::from("商品X"), stock: 999 });
     }
 
     #[test]
@@ -215,11 +215,11 @@ mod tests {
 
         assert_eq!(result.reserved.len(), 6);
         assert_eq!(result.not_reserved.len(), 0);
-        assert_eq!(result.reserved[0], OrderReserved{warehouse: String::from("倉庫3"), product_name: String::from("商品A"), stock: 50 });
-        assert_eq!(result.reserved[1], OrderReserved{warehouse: String::from("倉庫3"), product_name: String::from("商品B"), stock: 80 });
-        assert_eq!(result.reserved[2], OrderReserved{warehouse: String::from("倉庫3"), product_name: String::from("商品C"), stock: 60 });
-        assert_eq!(result.reserved[3], OrderReserved{warehouse: String::from("倉庫2"), product_name: String::from("商品B"), stock: 20 });
-        assert_eq!(result.reserved[4], OrderReserved{warehouse: String::from("倉庫2"), product_name: String::from("商品C"), stock: 20 });
-        assert_eq!(result.reserved[5], OrderReserved{warehouse: String::from("倉庫1"), product_name: String::from("商品C"), stock: 20 });
+        assert_eq!(result.reserved[0], OrderReserved{ warehouse: String::from("倉庫3"), product_name: String::from("商品A"), stock: 50 });
+        assert_eq!(result.reserved[1], OrderReserved{ warehouse: String::from("倉庫3"), product_name: String::from("商品B"), stock: 80 });
+        assert_eq!(result.reserved[2], OrderReserved{ warehouse: String::from("倉庫3"), product_name: String::from("商品C"), stock: 60 });
+        assert_eq!(result.reserved[3], OrderReserved{ warehouse: String::from("倉庫2"), product_name: String::from("商品B"), stock: 20 });
+        assert_eq!(result.reserved[4], OrderReserved{ warehouse: String::from("倉庫2"), product_name: String::from("商品C"), stock: 20 });
+        assert_eq!(result.reserved[5], OrderReserved{ warehouse: String::from("倉庫1"), product_name: String::from("商品C"), stock: 20 });
 	}
 }
