@@ -44,70 +44,65 @@ impl Warehouse<'_> {
         };
         let mut requests_to_linked_warehouse = Vec::new();
         requests.iter().for_each(|request| {
-            let mut item_order_result = self.reserve_item(&request);
-
-            // 引当できた場合は引当結果(OK)を生成
-            order_result.reserved.append(&mut item_order_result.reserved);
-
+            let (reserved, not_reserved) = self.reserve_item(&request);
+            // 引当できた場合は引当結果(OK)として処理
+            if let Some(r) = reserved {
+                order_result.reserved.push(r);
+            }
             // 引当できなかった場合はリンク先倉庫への注文依頼、または引当結果(NG)を生成
-            if item_order_result.not_reserved.len() > 0 {
-                let not_reserved = &item_order_result.not_reserved[0]; // vec!だが単一アイテムなので基本一つ
+            if let Some(not_r) = not_reserved {
                 match &self.linked_warehouse {
                     Some(_) => {
                         // リンク先倉庫が指定されている場合、注文依頼を作成
                         requests_to_linked_warehouse.push(OrderRequest{
                             product_name: String::from(&request.product_name),
-                            stock: not_reserved.stock
+                            stock: not_r.stock
                         })
                     },
                     None => {
-                        // リンク先倉庫が指定されていない場合、引当結果(NG)を生成
-                        order_result.not_reserved.append(&mut item_order_result.not_reserved);
+                        // リンク先倉庫が指定されていない場合、引当結果(NG)として処理
+                        order_result.not_reserved.push(not_r);
                     }
                 }
             }
         });
         
-        match &self.linked_warehouse {
-            Some(w) => {
-                // リンク先倉庫が指定されている場合はリンク先倉庫に引当依頼
-                let mut linked_order_result = w.reserve(&requests_to_linked_warehouse);
-                // リンク先倉庫での引当結果をマージ
-                order_result.reserved.append(&mut linked_order_result.reserved);
-                order_result.not_reserved.append(&mut linked_order_result.not_reserved);
-            },
-            None => (),
+        // リンク先倉庫への引当依頼
+        if let Some(w) = &self.linked_warehouse {
+            // リンク先倉庫が指定されている場合はリンク先倉庫に引当依頼
+            let mut linked_order_result = w.reserve(&requests_to_linked_warehouse);
+            // リンク先倉庫での引当結果をマージ
+            order_result.reserved.append(&mut linked_order_result.reserved);
+            order_result.not_reserved.append(&mut linked_order_result.not_reserved);
         }
         return order_result
     }
 
     // 1明細単位の在庫引当を実施
     // (本来はここがDBアクセスになり、行単位のトランザクションなので、このファンクションがトランザクションスコープ)
-    fn reserve_item(&self, request: &OrderRequest) -> OrderResult {
-        let mut order_result = OrderResult {
-            reserved: Vec::new(),
-            not_reserved: Vec::new(),
-        }; 
-        let inventry_item = &mut self.inventories.iter().find(|item| item.product_name == request.product_name);
-        match inventry_item {
+    fn reserve_item(&self, request: &OrderRequest) -> (Option<OrderReserved>, Option<OrderNotReserved>) {
+        let reserved;
+        let not_reserved;
+        match &self.inventories.iter().find(|item| item.product_name == request.product_name) {
             Some(inventry_item) => {
                 // 依頼された商品を扱っている場合は在庫数量を確認
                 if &inventry_item.stock >= &request.stock {
                     // 在庫数が依頼数以上であれば、依頼された通りの数量を引当結果として返す
-                    order_result.reserved.push(OrderReserved{
+                    reserved = Some(OrderReserved{
                         warehouse: String::from(&self.name),
                         product_name: String::from(&request.product_name),
                         stock: request.stock
                     });
+                    not_reserved = None;
                 } else {
                     // 在庫数が依頼数に不足しているのであれば、在庫分全てを引き当てる
-                    order_result.reserved.push(OrderReserved{
+                    reserved = Some(OrderReserved{
                         warehouse: String::from(&self.name),
                         product_name: String::from(&request.product_name),
                         stock: inventry_item.stock
                     });
                     // 残りは不足分として返す
-                    order_result.not_reserved.push(OrderNotReserved{
+                    not_reserved = Some(OrderNotReserved{
                         product_name: String::from(&request.product_name),
                         stock: request.stock - inventry_item.stock
                     });
@@ -115,13 +110,14 @@ impl Warehouse<'_> {
             },
             None => {
                 // 依頼された商品を扱っていない場合は依頼された通りの数量を不足分として返す
-                order_result.not_reserved.push(OrderNotReserved{
+                reserved = None;
+                not_reserved = Some(OrderNotReserved{
                     product_name: String::from(&request.product_name),
                     stock: request.stock
-                })
+                });
             }
         }
-        return order_result
+        return (reserved, not_reserved)
     }
 }
 
